@@ -1,8 +1,11 @@
 package main
 
-import "github.com/janaz/game-of-life-golang/gol"
-import "time"
-import "math/rand"
+import (
+	"math/rand"
+	"time"
+
+	"github.com/janaz/game-of-life-golang/gol"
+)
 
 func main() {
 	board := gol.NewBoard()

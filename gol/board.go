@@ -1,7 +1,10 @@
 package gol
 
-import "fmt"
-import "sync"
+import (
+	"bytes"
+	"fmt"
+	"sync"
+)
 
 type Board struct {
 	mu    sync.Mutex
@@ -43,7 +46,7 @@ func (b *Board) Next() *Board {
 	go b.Transfer(3, next, points_channel, w)
 	go b.Transfer(4, next, points_channel, w)
 
-	for k, _ := range b.board {
+	for k := range b.board {
 		p := PointFromString(k)
 		points_channel <- *p
 		for _, n := range p.Neighbors() {
@@ -73,16 +76,19 @@ func (b *Board) GetCell(p *Point) *Cell {
 }
 
 func (b *Board) Print(w, h int) {
-	fmt.Print("-----\n")
+	var buffer bytes.Buffer
+	buffer.WriteString("\033[H\033[2J")
+
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
 			p := NewPoint(x, y)
 			if b.GetCell(p).IsAlive() {
-				fmt.Print("X")
+				buffer.WriteString("X")
 			} else {
-				fmt.Print(".")
+				buffer.WriteString(".")
 			}
 		}
-		fmt.Print("\n")
+		buffer.WriteString("\n")
 	}
+	fmt.Print(buffer.String())
 }

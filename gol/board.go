@@ -7,14 +7,16 @@ import (
 )
 
 type Board struct {
-	mu    sync.Mutex
-	board map[string]*Cell
+	mu     sync.Mutex
+	board  map[string]*Cell
+	buffer bytes.Buffer
 }
 
 func NewBoard() *Board {
-	empty := map[string]*Cell{}
-	m := sync.Mutex{}
-	return &Board{m, empty}
+	return &Board{
+		mu:    sync.Mutex{},
+		board: map[string]*Cell{},
+	}
 }
 
 func (b *Board) SetAlive(p *Point) {
@@ -26,7 +28,6 @@ func (b *Board) SetAlive(p *Point) {
 func (b *Board) Transfer(nr int, next *Board, cp chan Point, w *sync.WaitGroup) {
 	for pv := range cp {
 		p := &pv
-		//fmt.Printf("%v thread reporting %v\n",nr,p)
 		c := b.GetCell(p).Next(b.AliveNeighbors(p))
 		if c.IsAlive() {
 			next.SetAlive(p)
@@ -75,20 +76,32 @@ func (b *Board) GetCell(p *Point) *Cell {
 	}
 }
 
-func (b *Board) Print(w, h int) {
-	var buffer bytes.Buffer
-	buffer.WriteString("\033[H\033[2J")
+func (b *Board) addHorizontalBorder(w int) {
+	b.buffer.WriteString(" ")
+	for x := 0; x < w; x++ {
+		b.buffer.WriteString("-")
+	}
+	b.buffer.WriteString("\n")
+}
 
+func (b *Board) Print(w, h int) {
+	b.buffer.WriteString("\033[H\033[2J")
+
+	b.addHorizontalBorder(w)
 	for y := 0; y < h; y++ {
+		b.buffer.WriteString("|")
 		for x := 0; x < w; x++ {
 			p := NewPoint(x, y)
 			if b.GetCell(p).IsAlive() {
-				buffer.WriteString("X")
+				b.buffer.WriteString("X")
 			} else {
-				buffer.WriteString(".")
+				b.buffer.WriteString(" ")
 			}
 		}
-		buffer.WriteString("\n")
+		b.buffer.WriteString("|\n")
 	}
-	fmt.Print(buffer.String())
+	b.addHorizontalBorder(w)
+
+	fmt.Print(b.buffer.String())
+	b.buffer.Reset()
 }

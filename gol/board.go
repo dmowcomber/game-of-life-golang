@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+var clearScreen = "\033[H\033[2J"
+
 type Board struct {
 	mu     sync.Mutex
 	board  map[string]*Cell
@@ -85,7 +87,7 @@ func (b *Board) addHorizontalBorder(w int) {
 }
 
 func (b *Board) Print(w, h int) {
-	b.buffer.WriteString("\033[H\033[2J")
+	b.buffer.WriteString(clearScreen)
 
 	b.addHorizontalBorder(w)
 	for y := 0; y < h; y++ {

@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/janaz/game-of-life-golang/gol"
+	"github.com/dmowcomber/game-of-life-golang/gol"
 )
 
 func TestAliveCell(t *testing.T) {
